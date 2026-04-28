@@ -1,7 +1,7 @@
 {
-  "name": "𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃",
+  "name": "optimus-xmd",
   "version": "2.0.5",
-  "description": "ᴍʏ ᴏᴘᴛɪᴍᴜs ɪs ʙᴀᴄᴋ",
+  "description": "My Optimus is back",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -17,16 +17,16 @@
     "multi-session",
     "pairing-bot"
   ],
-  "author": "𝐌ꝛ 𝛁𝚫𝚪𝚴𝚯𝚾•𝚸𝚪𝚰𝚳𝚵𝚵 𝚻𝚵𝐂𝚮 𝚯𝐅𝐅𝚰𝐂𝐈𝚫𝐋",
+  "author": "MR VARN0X",
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   },
   "dependencies": {
     "@adiwajshing/keyed-db": "^0.2.4",
     "@colors/colors": "^1.5.0",
     "@hapi/boom": "^10.0.0",
-    "@whiskeysockets/baileys": "latest",
+    "@whiskeysockets/baileys": "^6.7.5",
     "@vitalets/google-translate-api": "^9.2.0",
     "@vreden/youtube_scraper": "^1.2.0",
     "@distube/ytdl-core": "^4.14.4",
@@ -45,7 +45,6 @@
     "fake-useragent": "^1.0.1",
     "figlet": "^1.7.0",
     "file-type": "^16.5.4",
-    "fluent-ffmpeg": "^2.1.3",
     "form-data": "^4.0.0",
     "formdata-node": "^6.0.3",
     "fs-extra": "^11.2.0",
@@ -83,7 +82,6 @@
     "qrcode-terminal": "^0.12.0",
     "randomstring": "^1.3.0",
     "scrape-primbon": "^1.1.0",
-    "sharp": "^0.33.5",
     "similarity": "^1.2.1",
     "telegraf": "^4.16.3",
     "telegraf-ratelimit": "^2.0.0",
@@ -99,12 +97,5 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.7"
-  },
-  "repository": {
-    "type": "git",
-    "url": "http://t.me/Optimusxmdv2bot"
-  },
-  "bugs": {
-    "url": "http://t.me/Optimusxmdv2bot"
   }
 }
