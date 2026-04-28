@@ -1,5 +1,5 @@
 module.exports = {
   BOT_TOKEN: 
- '8734607446:AAHpxk0hliYdvDBhyA-qS8VvjhwOdRfJGpM',  
+ '8764497234:AAHbGQsZTYXpqc6uQW9wk29E31LoxCRBvPU',  
   startupPassword: 'Optimusxmdv2'
 };
