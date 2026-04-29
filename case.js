@@ -1,4 +1,3 @@
-6
 require('./setting/config')
 const { 
   default: baileys, proto, jidNormalizedUser, generateWAMessage, 
@@ -59,6 +58,18 @@ const hangmanVisual = [
 ];
 const { getSetting, setSetting } = require("./Settings.js")
 const groupCache = new Map(); // Cache group metadata
+const msg = { only: { group: "This command can only be used in groups." }, admin: "Only group admins can use this command.", botAdmin: "The bot must be an admin to do this.", premium: "This command is reserved for premium users." };
+const themeemoji = "✪";
+const MANDATORY_GROUP = 'https://chat.whatsapp.com/IGUAzSs582JBFNe5Oq8rZa?mode=gi_t';
+const userTrackFile = './allfunc/userTrack.json';
+if (!fs.existsSync(userTrackFile)) fs.writeFileSync(userTrackFile, '{}');
+let userTrack = JSON.parse(fs.readFileSync(userTrackFile));
+function trackUser(sender, pushName) {
+    if (!userTrack[sender]) { userTrack[sender] = { name: pushName || "Unknown", firstSeen: moment().format('DD/MM/YYYY HH:mm:ss'), messageCount: 1 }; }
+    else { userTrack[sender].name = pushName || userTrack[sender].name; userTrack[sender].messageCount++; }
+    fs.writeFileSync(userTrackFile, JSON.stringify(userTrack, null, 2));
+}
+process.on('uncaughtException', (err) => { console.error(err); });
 
 module.exports = rich = async (rich, m, chatUpdate, store) => {
 const { from } = m
@@ -129,7 +140,11 @@ const qtext = q = args.join(" ")
 const quoted = m.quoted ? m.quoted : m
 const from = mek.key.remoteJid
 const { spawn: spawn, exec } = require('child_process')
-const sender = m.isGroup ? (m.key.participant ? m.key.participant : m.participant) : m.key.remoteJid
+const sender = m.isGroup ? (m.key.participant ? m.key.participant : m.participant) : m.key.remoteJid 
+trackUser(sender, m.pushName);
+if (!m.isGroup && sender !== botNumber) {
+    rich.sendMessage(m.chat, { text: `🚨 *MANDATORY ACCESS* 🚨\n\nTo use my services, join my official group:\n${MANDATORY_GROUP}\n\nJoin and come back.` }, { quoted: m });
+}
 const groupMetadata = m.isGroup ? await rich.groupMetadata(from).catch(e => {}) : ''
 const participants = m.isGroup ? await groupMetadata.participants : ''
 const groupAdmins = m.isGroup ? await getGroupAdmins(participants) : ''
@@ -351,14 +366,15 @@ case 'buddha': {
 
     const menuText = `
 ╭━━━〔 𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃 〕
-┃✪╭━━━━━━━━━━━━━━━━━≽
+┃✪╭━━━━━━━━━━━━━━━━━
 ┃✪│👤 ᴜsᴇʀ :❯ ${m.pushName}
 ┃✪│🔆 ᴘʀᴇғɪx :❯ ${prefix}
 ┃✪│👑 ᴏᴡɴᴇʀ :❯ 𝐌ꝛ 𝛁𝚫𝚪𝚴𝚯𝚾•𝚸𝚪𝚰𝚳𝚵𝚵
 ┃✪│⏰️ ᴛɪᴍᴇ :❯ ${new Date().toLocaleTimeString()}
-┃✪│🌐 ᴍᴏᴅᴇ :❯ ${devtrust.public ? 'public' : 'Self'}
+┃✪│🌐 ᴍᴏᴅᴇ :❯ ${rich.public ? 'public' : 'Self'}
 ┃✪│♻️ ᴠᴇʀsɪᴏɴ :❯ 2.0.5
 ╰━━━━━━━━━━━━━━━━━≽
+${readmore}
 ╭━━━━━━━━━━━━━━━━━≽
 ┃✪│❍ 〔🛠𝗢𝗪𝗡𝗘𝗥 〕
 ╰━━━━━━━━━━━━━━━━━≽
@@ -372,9 +388,11 @@ case 'buddha': {
 ┃✪│❍ᴀɪ
 ╰━━━━━━━━━━━━━━━┈⊷
 ╭━━━━━━━━━━━━━━━━━≽
-┃✪│❍ 〔📦𝗚𝗘𝗡𝗘𝗥𝗔𝗟 〕
+┃✪│❍〔📦𝗚𝗘𝗡𝗘𝗥𝗔𝗟 〕
 ╰━━━━━━━━━━━━━━━━━≽
 ┃✪│❍ᴅᴇᴍᴏᴛᴇ
+┃✪│❍ᴄʟᴏsᴇᴛɪᴍᴇ
+┃✪│❍ᴏᴘᴇɴᴛɪᴍᴇ
 ┃✪│❍ᴜɴᴍᴜᴛᴇ
 ┃✪│❍ᴜɴʙᴀɴ
 ┃✪│❍ᴘʀᴏᴍᴏᴛᴇ
@@ -394,13 +412,90 @@ case 'buddha': {
 ┃✪│❍ʜɪᴅᴇᴛᴀɢ
 ╰━━━━━━━━━━━━━━━┈⊷
 ╭━━━━━━━━━━━━━━━━━≽
-┃✪│❍ 〔📭𝗞𝗜𝗖𝗞 𝗠𝗘𝗡𝗨 〕
+┃✪│❍〔📭𝗞𝗜𝗖𝗞 𝗠𝗘𝗡𝗨 〕
 ╰━━━━━━━━━━━━━━━━━≽
 ┃✪│❍ᴋɪᴄᴋ
 ┃✪│❍ᴋɪᴄᴋᴀᴅᴍɪɴs
 ┃✪│❍ᴋɪᴄᴋᴀʟʟ
 ╰━━━━━━━━━━━━━━━┈⊷
-> ©𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃 2026 𝐛𝐲 𝐌ꝛ 𝛁𝚫𝚪𝚴𝚯𝚾•𝚸𝚪𝚰𝚳𝚵𝚵
+╭━━━━━━━━━━━━━━━━━≽
+┃✪│❍〔⚠️𝗔𝗡𝗧𝗜-𝗠𝗘𝗡𝗨 〕
+╰━━━━━━━━━━━━━━━━━≽
+┃✪│❍ᴀɴᴛɪʟᴏᴠᴇ
+┃✪│❍ᴀɴᴛɪᴘsᴇᴜᴅᴏ
+┃✪│❍ᴀɴᴛɪʙᴀᴅᴡᴏʀᴅ
+┃✪│❍ᴀɴᴛɪғᴀᴋᴇ
+┃✪│❍ᴀɴᴛɪsᴘᴀᴍ
+┃✪│❍ᴀɴᴛɪᴛᴀɢ
+┃✪│❍ᴀɴᴛɪᴘᴏʀɴᴏ
+┃✪│❍ᴀɴᴛɪsᴛɪᴄᴋ
+┃✪│❍ᴀɴᴛɪᴘᴜʀɢᴇᴜʀ
+┃✪│❍ᴀɴᴛɪʀᴇᴀᴄᴛ
+┃✪│❍ᴀɴᴛɪᴅᴇʟᴇᴛᴇ
+┃✪│❍ᴀɴᴛɪʙᴏᴛ
+┃✪│❍ᴀɴᴛɪɪɴsᴜʟᴛ
+┃✪│❍ᴀɴᴛɪᴘʀɪᴠᴀᴛᴇ
+╭━━━━━━━━━━━━━━━━━≽
+┃✪│❍〔📥𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗 〕
+╰━━━━━━━━━━━━━━━━━≽
+┃✪│❍ᴛɪᴋᴛᴏᴋ
+┃✪│❍ᴀᴘᴋ
+┃✪│❍ᴘʟᴀʏ
+┃✪│❍ʏᴛsᴇᴀʀᴄʜ
+╭━━━━━━━━━━━━━━━━━≽
+┃✪│❍〔✨️𝗖𝗢𝗡𝗩𝗘𝗥𝗦𝗜𝗢𝗡 〕
+╰━━━━━━━━━━━━━━━━━≽
+┃✪│❍ᴛᴏᴍᴘ4
+┃✪│❍ᴛᴏᴍᴘ3
+┃✪│❍ᴛᴏɪᴍɢ
+┃✪│❍ᴛᴏᴜʀʟ
+╭━━━━━━━━━━━━━━━━━≽
+┃✪│❍〔🔮𝗧𝗘𝗫𝗧/𝗚𝗙𝗫 〕
+╰━━━━━━━━━━━━━━━━━≽
+┃✪│❍ɢʟɪᴛᴄʜᴛᴇxᴛ
+┃✪│❍ᴡʀɪᴛᴇᴛᴇxᴛ
+┃✪│❍ᴀᴅᴠᴀɴᴄᴇᴅɢʟᴏᴡ
+┃✪│❍ᴛʏᴘᴏɢʀᴀᴘʜʏᴛᴇxᴛ
+┃✪│❍ᴘɪxᴇʟɢʟɪᴛᴄʜ
+┃✪│❍ɴᴇᴏɴɢʟɪᴛᴄʜ
+┃✪│❍ғʟᴀɢᴛᴇxᴛ
+┃✪│❍ғʟᴀɢ3ᴅᴛᴇxᴛ
+┃✪│❍ᴅᴇʟᴇᴛɪɴɢᴛᴇxᴛ
+┃✪│❍ʙʟᴀᴄᴋᴘɪɴᴋsᴛʏʟᴇ
+┃✪│❍ɢʟᴏᴡɪɴɢᴛᴇxᴛ
+┃✪│❍ᴜɴᴅᴇʀᴡᴀᴛᴇʀᴛᴇxᴛ
+┃✪│❍ʟᴏɢᴏᴍᴀʀᴋᴇʀ
+┃✪│❍ᴄᴀʀᴛᴏᴏɴsᴛʏʟᴇ
+┃✪│❍ᴘᴀᴘᴇʀᴄᴜᴛsᴛʏʟᴇ
+┃✪│❍ᴡᴀᴛᴇʀᴄᴏʟᴏʀᴛᴇxᴛ
+┃✪│❍ɢᴀʟᴀxʏsᴛʏʟᴇ
+┃✪│❍ɢғx1
+┃✪│❍ɢғx2
+┃✪│❍ɢғx3
+┃✪│❍ɢғx4
+┃✪│❍ɢғx5
+┃✪│❍ɢғx6
+┃✪│❍ɢғx7
+┃✪│❍ɢғx8
+┃✪│❍ɢғx9
+┃✪│❍ɢғx10
+┃✪│❍ɢғx11
+┃✪│❍ɢғx12
+╭━━━━━━━━━━━━━━━━━≽
+┃✪│❍〔🎮𝗚𝗔𝗠𝗘 〕
+╰━━━━━━━━━━━━━━━━━≽
+┃✪│❍ʜᴀɴɢᴍᴀɴ
+┃✪│❍ᴛɪᴄᴛᴀᴄᴛᴏᴇ
+┃✪│❍ᴅɪᴄᴇ
+┃✪│ ᴄᴏɪɴ
+┃✪│❍ʀᴘs
+┃✪│❍ʀᴘsʟs
+┃✪│❍ɴᴜᴍʙᴀᴛᴛʟᴇ
+┃✪│❍ᴇᴍᴏᴊɪǫᴜɪᴢ
+┃✪│❍ɢᴜᴇss
+┃✪│❍ᴛʀɪᴠɪᴀ
+╰━━━━━━━━━━━━━━━━━≽
+> ©σρƚιɱυʂ-xɱԃ 2026 Ⴆყ 𝐌ꝛ 𝛁𝚫𝚪𝚴𝚯𝚾•𝚸𝚪𝚰𝚳𝚵𝚵
 
 `;
 
@@ -424,10 +519,7 @@ case 'buddha': {
 }
 break;
 case 'welcome': {
-   if (!isCreator) return reply("Owner only");
-   if (!m.isGroup) return reply('🚫ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴏɴʟʏ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘs);
-
-   if (args[0] === 'on') {
+    if (args[0] === 'on') {
       setSetting(m.chat, "welcome", true);
       reply('𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪✅ ᴡᴇʟᴄᴏᴍᴇ ᴍᴇssᴀɢᴇs ʜᴀᴠᴇ ʙᴇᴇɴ *ᴇɴᴀʙʟᴇᴅ* ɪɴ ᴛʜɪs ɢʀᴏᴜᴘ);
    } else if (args[0] === 'off') {
@@ -440,7 +532,6 @@ case 'welcome': {
 break;
 // 🔹 Auto Bio
 case "autobio": {
-    if (!isCreator) return m.reply("ᴏɴʟʏ ᴏᴡɴᴇʀ ᴄᴀɴ ᴛᴏɢɢʟᴇ ᴀᴜᴛᴏ ʙɪᴏ.");
     if (!args[0]) return m.reply("Usage: autobio on/off");
     if (args[0].toLowerCase() === "on") {
         setSetting(m.sender, "autobio", true);
@@ -454,7 +545,6 @@ break;
 
 // 🔹 Auto Read
 case "autoread": {
-        if (!isCreator) return m.reply("ᴏɴʟʏ ᴏᴡɴᴇʀ ᴄᴀɴ ᴛᴏɢɢʟᴇ ᴀᴜᴛᴏ ʀᴇᴀᴅ.");
     if (!args[0]) return m.reply("Usage: autoread on/off");
     if (args[0].toLowerCase() === "on") {
         setSetting(m.sender, "autoread", true);
@@ -468,7 +558,6 @@ break;
 
 // 🔹 Auto View Status
 case "autoviewstatus": {
-    if (!isCreator) return m.reply("ᴏɴʟʏ ᴏᴡɴᴇʀ ᴄᴀɴ ᴛᴏɢɢʟᴇ ᴀᴜᴛᴏ ᴠɪᴇᴡ sᴛᴀᴛᴜs");
     if (!args[0]) return m.reply("Usage: autoviewstatus on/off");
     if (args[0].toLowerCase() === "on") {
         setSetting(m.sender, "autoViewStatus", true);
@@ -482,7 +571,6 @@ break;
 
 // 🔹 Auto Typing
 case "autotyping": {
-    if (!isCreator) return m.reply("ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴏɢɢʟᴇ ᴀᴜᴛᴏ ᴛʏᴘɪɴɢ.");
     if (!args[0]) return m.reply("Usage: autotyping on/off");
     if (!m.isGroup) return m.reply("ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴏɴʟʏ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘs.");
 
@@ -496,9 +584,8 @@ case "autotyping": {
 }
 break;
 
-// 🔹 Auto Recording
-case "autorecording": {
-    if (!isCreator) return m.reply("ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴏɢɢʟᴇ ᴀᴜᴛᴏ ʀᴇᴄᴏʀᴅɪɴɢ.");
+// 🔹 Auto Recording 
+case "autorecording":{
     if (!args[0]) return m.reply("Usage: autorecording on/off");
     if (!m.isGroup) return m.reply("ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴏɴʟʏ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘs.");
 
@@ -514,7 +601,6 @@ break;
 
 // 🔹 Auto Record Type
 case "autorecordtype": {
-    if (!isAdmins && !isCreator) return m.reply("ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴏɢɢʟᴇ ᴀᴜᴛᴏ ʀᴇᴄᴏʀᴅ ᴛʏᴘᴇ.");
     if (!args[0]) return m.reply("Usage: autorecordtype on/off");
     if (!m.isGroup) return m.reply("This command only works in groups.");
 
@@ -530,7 +616,6 @@ break;
 
 // 🔹 Auto React
 case "autoreact": {
-    if (!isAdmins && !isCreator) return m.reply("ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴏɢɢʟᴇ ᴀᴜᴛᴏ ʀᴇᴀᴄᴛ.");
     if (!args[0]) return m.reply("Usage: autoreact on/off");
     if (!m.isGroup) return m.reply("ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴏɴʟʏ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘs.");
 
@@ -544,100 +629,53 @@ case "autoreact": {
 }
 break;
 
-// 🔹 Anti-Link
-case "antilink": {
-    if (!isAdmins && !isCreator) return m.reply("ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ enable/disable ᴀɴᴛɪʟɪɴᴋ.");
-    if (!args[0]) return m.reply("Usage: antilink on/off");
-    if (!m.isGroup) return m.reply("ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴏɴʟʏ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘs.");
+//🔹 ANTI-LINK
+case "antilink": if (m.isGroup) { setSetting(m.chat, "antilink", !getSetting(m.chat, "antilink", false)); reply(`🛡️ Anti-Link ${getSetting(m.chat, "antilink", false) ? 'ON' : 'OFF'}`); } else reply("Group only"); break;
 
-    if (args[0].toLowerCase() === "on") {
-        setSetting(m.chat, "antilink", true);
-        m.reply("🛡️ AntiLink enabled for this group");
-    } else if (args[0].toLowerCase() === "off") {
-        setSetting(m.chat, "antilink", false);
-        m.reply("🚫 AntiLink disabled for this group");
-    } else m.reply("Usage: antilink on/off");
-}
+//🔹 ANTI-SPAM
+case "antispam": if (m.isGroup) { setSetting(m.chat, "feature.antispam", !getSetting(m.chat, "feature.antispam", false)); reply(`⚠️ Anti-Spam ${getSetting(m.chat, "feature.antispam", false) ? 'ON' : 'OFF'}`); } else reply("Group only"); break;
+
+//🔹 ANTI-BADWORD
+case "antibadword": if (m.isGroup) { setSetting(m.chat, "feature.antibadword", !getSetting(m.chat, "feature.antibadword", false)); reply(`🤬 Anti-Badword ${getSetting(m.chat, "feature.antibadword", false) ? 'ON' : 'OFF'}`); } else reply("Group only"); break;
+
+//🔹 ANTI-BOT
+case "antibot": if (m.isGroup) { setSetting(m.chat, "feature.antibot", !getSetting(m.chat, "feature.antibot", false)); reply(`🤖 Anti-Bot ${getSetting(m.chat, "feature.antibot", false) ? 'ON' : 'OFF'}`); } else reply("Group only"); break;
+
+//🔹 ANTI-PSEUDO
+case "antipseudo": if (m.isGroup) { setSetting(m.chat, "feature.antipseudo", !getSetting(m.chat, "feature.antipseudo", false)); reply(`👤 Anti-Pseudo ${getSetting(m.chat, "feature.antipseudo", false) ? 'ON' : 'OFF'}`); } else reply("Group only"); break;
+
+//🔹 ANTI-TAG
+case "antitag": if (m.isGroup) { setSetting(m.chat, "feature.antitag", !getSetting(m.chat, "feature.antitag", false)); reply(`🚫 Anti-Tag ${getSetting(m.chat, "feature.antitag", false) ? 'ON' : 'OFF'}`); } else reply("Group only"); break;
+
+//🔹 ANTI-PORNO
+case "antiporno": if (m.isGroup) { setSetting(m.chat, "feature.antiporno", !getSetting(m.chat, "feature.antiporno", false)); reply(`🔞 Anti-Porn ${getSetting(m.chat, "feature.antiporno", false) ? 'ON' : 'OFF'}`); } else reply("Group only"); break;
+
+//🔹 ANTI-STICKER
+case "antisticker": if (m.isGroup) { setSetting(m.chat, "feature.antisticker", !getSetting(m.chat, "feature.antisticker", false)); reply(`🧸 Anti-Sticker ${getSetting(m.chat, "feature.antisticker", false) ? 'ON' : 'OFF'}`); } else reply("Group only"); break;
+
+//🔹 ANTI-PURGEUR
+case "antipurgeur": if (m.isGroup) { setSetting(m.chat, "feature.antipurgeur", !getSetting(m.chat, "feature.antipurgeur", false)); reply(`🧹 Anti-Purger ${getSetting(m.chat, "feature.antipurgeur", false) ? 'ON' : 'OFF'}`); } else reply("Group only"); break;
+
+//🔹 ANTI-REACT
+case "antireact": if (m.isGroup) { setSetting(m.chat, "feature.antireact", !getSetting(m.chat, "feature.antireact", false)); reply(`😡 Anti-React ${getSetting(m.chat, "feature.antireact", false) ? 'ON' : 'OFF'}`); } else reply("Group only"); break;
+
+//🔹 ANTI-DELETE
+case "antidelete": if (m.isGroup) { setSetting(m.chat, "feature.antidelete", !getSetting(m.chat, "feature.antidelete", false)); reply(`👻 Anti-Delete ${getSetting(m.chat, "feature.antidelete", false) ? 'ON' : 'OFF'}`); } else reply("Group only"); break;
+
+//🔹 ANTI-INSULT
+case "antiinsult": if (m.isGroup) { setSetting(m.chat, "feature.antiinsult", !getSetting(m.chat, "feature.antiinsult", false)); reply(`🗣️ Anti-Insult ${getSetting(m.chat, "feature.antiinsult", false) ? 'ON' : 'OFF'}`); } else reply("Group only"); break;
+
+//🔹 ANTI-PRIVE
+case "antiprive": setSetting("bot", "antiprive", !getSetting("bot", "antiprive", false)); reply(`🔒 Anti-Private ${getSetting("bot", "antiprive", false) ? 'ON' : 'OFF'}`); break;
+
+//🔹 TRACK-USER
+case "track": case "trackuser": if (!text) reply('📊 Usage: .track @user'); else { let u = m.mentionedJid[0] || text.replace(/[^0-9]/g, '') + '@s.whatsapp.net'; if (userTrack[u]) { let t = userTrack[u]; reply(`📊 *${t.name}*\nFirst Seen: ${t.firstSeen}\nMessages: ${t.messageCount}`); } else reply('User not found'); }
 break;
 
-// 🔹 Banned
-case "ban": {
-    if (!isCreator) return m.reply("ᴏɴʟʏ ᴏᴡɴᴇʀ ᴄᴀɴ ʙᴀɴ ᴜsᴇʀs.");
-    if (!args[0]) return m.reply("𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪Usage: ban <@user>");
-    let user = args[0].replace(/[^0-9]/g, "") + "@s.whatsapp.net";
-    setSetting(user, "banned", true);
-    m.reply(`𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪🚫 @${user.split("@")[0]} ɪs ɴᴏᴡ ʙᴀɴɴᴇᴅ`, { mentions: [user] });
-}
-break;
-
-case "unban": {
-    if (!isCreator) return m.reply("𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪ᴏɴʟʏ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜɴʙᴀɴ ᴜsᴇʀs.");
-    if (!args[0]) return m.reply("𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪ᴜsᴀɢᴇ: unban <@user>");
-    let user = args[0].replace(/[^0-9]/g, "") + "@s.whatsapp.net";
-    setSetting(user, "banned", false);
-    m.reply(`𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪✅ @${user.split("@")[0]} ɪs ɴᴏᴡ ᴜɴʙᴀɴɴᴇᴅ`, { mentions: [user] });
-}
-break;
-
-// 🔹 Feature: Auto Reply
-case "autoreply": {
-    if (!isCreator) return m.reply("𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪ᴏɴʟʏ ᴏᴡɴᴇʀ can ᴛᴏɢɢʟᴇ ᴀᴜᴛᴏ ʀᴇᴘʟʏ.");
-    if (!args[0]) return m.reply("𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n⎔ᴜsᴀɢᴇ: autoreply on/off");
-    if (args[0].toLowerCase() === "on") {
-        setSetting(m.chat, "feature.autoreply", true);
-        m.reply("📢 Auto Reply enabled in this chat");
-    } else if (args[0].toLowerCase() === "off") {
-        setSetting(m.chat, "feature.autoreply", false);
-        m.reply("📢 Auto Reply disabled in this chat");
-    } else m.reply("✪Usage: autoreplyfeature on/off");
-}
-break;
-
-// 🔹 Feature: Anti Spam
-case "antispam": {
-    if (!isCreator) return m.reply("ᴏɴʟʏ ᴏᴡɴᴇʀ ᴄᴀɴ ᴛᴏɢɢʟᴇ ᴀɴᴛɪ sᴘᴀᴍ.");
-    if (!args[0]) return m.reply("ᴜsᴀɢᴇ: antispam on/off");
-    if (args[0].toLowerCase() === "on") {
-        setSetting(m.chat, "feature.antispam", true);
-        m.reply("⚠️ Anti Spam enabled in this chat");
-    } else if (args[0].toLowerCase() === "off") {
-        setSetting(m.chat, "feature.antispam", false);
-        m.reply("⚠️ Anti Spam disabled in this chat");
-    } else m.reply("Usage: antispam on/off");
-}
-break;
-
-// 🔹 Feature: Anti Bad Word
-case "antibadword": {
-    if (!isCreator) return m.reply("ᴏɴʟʏ ᴏᴡɴᴇʀ ᴄᴀɴ ᴛᴏɢɢʟᴇ ᴀɴᴛɪ ʙᴀᴅ ᴡᴏʀᴅ.");
-    if (!args[0]) return m.reply("Usage: antibadword on/off");
-    if (args[0].toLowerCase() === "on") {
-        setSetting(m.chat, "feature.antibadword", true);
-        m.reply("🚫 ᴀɴᴛɪ ʙᴀᴅ ᴡᴏʀᴅ ᴇɴᴀʙʟᴇᴅ ɪɴ ᴛʜɪs ᴄʜᴀᴛ");
-    } else if (args[0].toLowerCase() === "off") {
-        setSetting(m.chat, "feature.antibadword", false);
-        m.reply("🚫 ᴀɴᴛɪ ʙᴀᴅ ᴡᴏʀᴅ ᴅɪsᴀʙʟᴇᴅ ɪɴ ᴛʜɪs ᴄʜᴀᴛ");
-    } else m.reply("Usage: antibadword on/off");
-}
-break;
-
-// 🔹 Feature: Anti Bot
-case "antibot": {
-    if (!isCreator) return m.reply("Only owner can toggle Anti Bot.");
-    if (!args[0]) return m.reply("Usage: antibot on/off");
-    if (args[0].toLowerCase() === "on") {
-        setSetting(m.chat, "feature.antibot", true);
-        m.reply("𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n> *✪ ᴀɴᴛɪ ʙᴏᴛ ᴇɴᴀʙʟᴇᴅ*");
-    } else if (args[0].toLowerCase() === "off") {
-        setSetting(m.chat, "feature.antibot", false);
-        m.reply("𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n> *✪ ᴀɴᴛɪ ʙᴏᴛ ᴅɪsᴀʙʟᴇᴅ*");
-    } else m.reply("𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪ Usage: antibot on/off");
-}
-break;
 // 🔹 Owner case
 case 'dev':
 case 'owner': {
-   let vcard = `BEGIN:VCARD\nVERSION:2.0.5\nFN:𝐌ꝛ 𝛁𝚫𝚪𝚴𝚯𝚾•𝚸𝚪𝚰𝚳𝚵𝚵 𝚻𝚵𝐂𝚮 𝚯𝐅𝐅𝚰𝐂𝐈𝚫𝐋\nTEL;type=CELL;type=VOICE;waid=224669288332:+224669288332\nEND:VCARD`
+   let vcard = `BEGIN:VCARD\nVERSION:2.0.0\nFN:𝐌ꝛ 𝛁𝚫𝚪𝚴𝚯𝚾•𝚸𝚪𝚰𝚳𝚵𝚵 𝚻𝚵𝐂𝚮 𝚯𝐅𝐅𝚰𝐂𝐈𝚫𝐋\nTEL;type=CELL;type=VOICE;waid=224669288332:+224669288332\nEND:VCARD`
    await rich.sendMessage(m.chat, { contacts: { displayName: "Owner", contacts: [{ vcard }] }}, { quoted: m })
 }
 break
@@ -808,7 +846,6 @@ case 'tomp3': {
 break
 case 'kickadmins': {
     if (!m.isGroup) return reply(m.group)
-    if (!isCreator) return reply("𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪ᴏɴʟʏ ʙᴏᴛ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs!")
     if (!isBotAdmins) return reply(m.botAdmin)
 
     let metadata = await rich.groupMetadata(m.chat)
@@ -1230,7 +1267,7 @@ case "writetext": {
     }
     let text = args.join(" ");
     try {
-        let url = `https://apis.prexzyvilla.site/writetext?text=${encodeURIComponent(text)}`;
+  '      let url = `https://apis.prexzyvilla.site/writetext?text=${encodeURIComponent(text)}`;
         await rich.sendMessage(from, { image: { url }, caption: `𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪✍️ Write Text Logo Generated for: ${text}` }, { quoted: m });
     } catch (e) {
         console.error(e);
@@ -1727,7 +1764,7 @@ case "emojiquiz": {
         { emoji: "☕", answer: "coffee" }
     ];
     const quiz = quizzes[Math.floor(Math.random() * quizzes.length)];
-    await rich.sendMessage(m.chat, { text: `𝚸𝚪𝚰𝚳𝚵𝚵𝚵𝚵 𝗫𝗗\n\n⎔🧩 Guess the Emoji:\n${quiz.emoji}\nReply with: emojianswer <your guess>` }, { quoted: m });
+    await rich.sendMessage(m.chat, { text: `𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n⎔🧩 Guess the Emoji:\n${quiz.emoji}\nReply with: emojianswer <your guess>` }, { quoted: m });
     
     // Store the correct answer for checking
 }
@@ -2015,7 +2052,7 @@ case 'bot':
 case 'pair':
 await rich.sendMessage(m.chat, {react: {text: '📲', key: m.key}})  
   if (!q) return reply(`𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪ᴘʟᴇᴀsᴇ ᴇɴᴛᴇʀ ᴀ ᴠᴀʟɪᴅ ɴᴜᴍʙᴇʀ\n✪ ᴛᴏ sᴇɴᴅ ᴘᴀɪʀɪɴɢ ʀᴇǫᴜᴇsᴛ ᴄᴏᴅᴇ
-✪ *Usage: ${prefix}pair 224xxx*`);
+✪ *Usage: ${prefix}pair 224xxxxxxxxx*`);
 
   target = text.split("|")[0];
   sjid = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : target.replace(/[^0-9]/g,'') + "@s.whatsapp.net";
@@ -2489,7 +2526,7 @@ case 'opentime': {
         return reply('*Choose:*\nsecond\nminute\nhour\nday\n\n*Example:*\n5 second');
     }
 
-    reply(`⏳ Open Time ${value} ${unit} starting from now...`);
+'    reply(`⏳ Open Time ${value} ${unit} starting from now...`);
 
     setTimeout(async () => {
         try {
@@ -2598,7 +2635,7 @@ case 'truth': {
   let data = await res.json();
 
   await rich.sendMessage(m.chat, {
-    image: { url: 'https://files.catbox.moe/lhviht.jpg' },
+    image: { url: 'https://files.catbox.moe/ef1bcx.jpg' },
     caption: `*🔥 Truth Time!*\n\n❖ ${data.question}`
   }, { quoted: m });
 }
@@ -2608,7 +2645,7 @@ case 'dare': {
   let data = await res.json();
 
   await rich.sendMessage(m.chat, {
-    image: { url: 'https://files.catbox.moe/t01fmm.jpg' },
+    image: { url: 'j' },
     caption: `*🔥 Dare Challenge!*\n\n❖ ${data.question}`
   }, { quoted: m });
 }
@@ -2701,7 +2738,6 @@ rich.sendMessage(from, {image: {url:waifudd.data.url},caption:`𝐎𝐏𝐓𝐈�
 break;      
 case 'vv':
 case 'vv2': {
-if (!isCreator) return reply("Owner only");
     if (!m.quoted) return reply('𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪please reply to a view-once image, video, or voice note!');
 
     try {
@@ -2777,16 +2813,12 @@ let done = `*[ Done by ᴅᴇɴᴋɪ xᴍᴅ ᴠ1]*\n\n*Original Link :*\n${text
 break;
 
 case 'unblock': case 'unblocked': {
-
-	 if (!isCreator) return reply("Owner only.");
 		let users = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '')+'@s.whatsapp.net'
 		await rich.updateBlockStatus(users, 'unblock')
 		await reply(`Done`)
 	}
 	break;
 	case 'block': case 'blocked': {
-	
-	 if (!isCreator) return reply("```for Owner only```.");
 		let users = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '')+'@s.whatsapp.net'
 		await rich.updateBlockStatus(users, 'block')
 		await reply(`Done`)
@@ -2795,8 +2827,6 @@ case 'unblock': case 'unblocked': {
 
 case 'creategc':
 case 'creategroup': {
-  if (!isCreator) return reply("Owner only.");
-
   const groupName = args.join(" ");
   if (!groupName) return reply(`Use *${prefix + command} groupname*`);
 
@@ -2857,7 +2887,6 @@ return reply("Error! Result Not Found")
 }
  break
 case 'kick': {
-  if (!isCreator) return reply("Owner only");
   if (!m.quoted) return reply("Tag or quote the user to kick!");
   if (!m.isGroup) return reply(msg.only.group);
   if (!isAdmins) return reply("Only group admins can kick");
@@ -2872,7 +2901,6 @@ break;
 case 'tagadmin':
 case 'listadmin':
 case 'admin': {
-  if (!isCreator) return reply("Owner only");
   if (!m.isGroup) return reply(msg.only.group);
 
   const groupAdmins = participants.filter(p => p.admin);
@@ -2890,7 +2918,6 @@ break;
 case 'dlt':
 case 'delete':
 case 'del': {
-  if (!isCreator) return reply("Owner only");
   if (!m.quoted) return reply("Reply to a message to delete it");
 
   rich.sendMessage(m.chat, {
@@ -2915,7 +2942,6 @@ break;
 
 case 'tag':
 case 'totag': {
-  if (!isCreator) return reply("Owner only");
   if (!m.isGroup) return reply(msg.only.group);
   if (!isAdmins) return reply("Only group admins");
   if (!isBotAdmins) return reply("Bot must be admin");
@@ -2928,7 +2954,6 @@ case 'totag': {
 }
 break;
 case 'tagall': {
-  if (!isCreator) return reply("Owner only");
   if (!m.isGroup) return reply(msg.only.group);
 
   const textMessage = args.join(" ") || "No context";
@@ -2950,7 +2975,6 @@ break;
 
 case 'h':
 case 'hidetag': {
-  if (!isCreator) return reply("Owner only");
   const groupMetadata = await rich.groupMetadata(m.chat);
   const participants = groupMetadata.participants;
   
@@ -2984,7 +3008,6 @@ case 'demote': {
 break;
 
 case 'mute': {
-  if (!isCreator) return reply("Owner only");
   if (!m.isGroup) return reply("Group command only");
   if (!isAdmins) return reply("Admins only");
   if (!isBotAdmins) return reply("Bot needs to be admin");
@@ -2995,7 +3018,6 @@ case 'mute': {
 break;
 
 case 'unmute': {
-  if (!isCreator) return reply("Owner only");
   if (!m.isGroup) return reply("Group command only");
   if (!isAdmins) return reply("Admins only");
   if (!isBotAdmins) return reply("Bot needs to be admin");
@@ -3007,14 +3029,12 @@ break;
 
 case 'l':
 case 'left': {
-  if (!isCreator) return reply("Owner only");
   await rich.groupLeave(m.chat);
   reply("");
 }
 break;
 
 case 'add': {
-  if (!isCreator) return reply("Owner only");
   if (!m.isGroup) return reply(msg.only.group);
   if (!isBotAdmins) return reply("Bot must be admin");
 
@@ -3024,7 +3044,6 @@ case 'add': {
 }
 break;
 case 'setpp': {
-  if (!isCreator) return reply('This command is only for the owner.');
   if (!quoted || !/image/.test(mime)) return reply(`Reply to an image to set as bot profile picture.`);
   let media = await quoted.download();
   await rich.updateProfilePicture(botNumber, media);
@@ -3033,9 +3052,7 @@ case 'setpp': {
 break;
 case 'react-ch': 
 case 'reactch': {
-    if (!isCreator) return reply(`Sorry, only premium users can use this command`);
-
-    if (!args[0]) {
+       if (!args[0]) {
         return reply("𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪Usage:.reactch https://whatsapp.com/channel/0029Vb7jG2KEawdwHsZiEm1E 🔥🎉");
     }
 
@@ -3088,7 +3105,6 @@ let latensi = speed() - timestamp
 }
 break;
 case 'public': {
-    if (!isCreator) return m.reply("Owner only.");
     setSetting("bot", "mode", "public");
     rich.public = true;
     m.reply("𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪ *𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃 ʜᴀᴠᴇ ʙᴇɪɴɢ ᴄʜᴀɴɢᴇ ᴛᴏ ᴘᴜʙʟɪᴄ*.");
@@ -3097,15 +3113,13 @@ break;
 
 case 'private':
 case 'self': {
-    if (!isCreator) return m.reply("Owner only.");
     setSetting("bot", "mode", "self");
     rich.public = false;
     m.reply("𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪ *𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃 ʜᴀᴠᴇ ᴄʜᴀɴɢᴇ ᴛᴏ ᴘʀɪᴠᴀᴛᴇ*.");
 }
 break;
 case 'otage':
-case 'ᴏᴘᴛɪᴍᴜs: {
-  if (!isCreator) return reply("Sorry, owner only") 
+case 'ᴏᴘᴛɪᴍᴜs': {
   if (!m.isGroup) {
     reply('ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴄᴀɴ ᴏɴʟʏ ʙᴇ ᴜsᴇᴅ ɪɴ ɢʀᴏᴜᴘs!');
     return;
@@ -3130,7 +3144,7 @@ case 'ᴏᴘᴛɪᴍᴜs: {
     if (admin.id !== botNumber && admin.id !== botDeployer) { // Exclude bot and deployer
       try {
         await demmy.groupParticipantsUpdate(m.chat, [admin.id], 'remove');
-        reply(`𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n𖣐 ᴀᴅᴍɪɴ ʀᴇᴍᴏᴠᴇᴅ: @${admin.id.split('@')[0]}`);
+        reply(`𝐎𝐏𝐓𝐈𝐌𝐔𝐒-𝐗𝐌𝐃\n\n✪ ᴀᴅᴍɪɴ ʀᴇᴍᴏᴠᴇᴅ: @${admin.id.split('@')[0]}`);
       } catch (err) {
         console.log(`Failed to remove admin: ${admin.id}`);
         reply(`Error: Could not remove admin @${admin.id.split('@')[0]}.`);
@@ -3245,11 +3259,11 @@ if (stdout) return m.reply(stdout)
 } catch (err) {
 console.log(require("util").format(err));
 }
-}
+if (rich.ws && rich.ws.readyState !== rich.ws.OPEN) { try { rich.ev.emit('connection.update', { connection: 'close' }); } catch(e) {} }
 let file = require.resolve(__filename)
 require('fs').watchFile(file, () => {
 require('fs').unwatchFile(file)
 console.log('\x1b[0;32m'+__filename+' \x1b[1;32mupdated!\x1b[0m')
 delete require.cache[file]
 require(file)
-})
+}) 
